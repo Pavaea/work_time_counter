@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Time Progress App</title>
+  <!-- Viewport for mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    /* Dark theme body */
+    body { 
+      font-family: sans-serif; 
+      padding: 20px; 
+      margin: 0; 
+      background-color: #121212; 
+      color: #fff; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      min-height: 100vh; 
+    }
+
+    h2 { text-align: center; }
+
+    input, button { 
+      padding: 12px; 
+      font-size: 18px; 
+      margin: 8px 0; 
+      width: 100%; 
+      max-width: 400px; 
+      box-sizing: border-box; 
+      border-radius: 6px;
+      border: 1px solid #444; 
+      background-color: #1e1e1e; 
+      color: #fff;
+    }
+
+    button {
+      background-color: #4CAF50; 
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #progressContainer { 
+      width: 100%; 
+      max-width: 400px; 
+      background: #333; 
+      height: 30px; 
+      border-radius: 5px; 
+      margin-top: 20px; 
+      overflow: hidden;
+    }
+
+    #progressBar { 
+      height: 100%; 
+      width: 0%; 
+      text-align: center; 
+      line-height: 30px; 
+      color: #fff;
+      background: linear-gradient(to right, #4CAF50, #2e7d32); /* two green shades */
+      transition: width 0.5s ease;
+    }
+
+    #times { 
+      margin-top: 15px; 
+      text-align: center; 
+      font-size: 18px;
+      word-break: break-word;
+    }
+
+    label {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Time Progress App</h2>
+  <label for="startTime">Start Time (HH:MM):</label>
+  <input type="time" id="startTime" value="08:00">
+  <button onclick="startTracking()">Start</button>
+
+  <div id="times"></div>
+  <div id="progressContainer">
+    <div id="progressBar">0%</div>
+  </div>
+
+  <script>
+    let interval;
+
+    function startTracking() {
+      clearInterval(interval); // reset previous run
+      const startInput = document.getElementById('startTime').value;
+      if (!startInput) return alert("Please enter a start time");
+
+      // Parse start time
+      const [h, m] = startInput.split(':').map(Number);
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+
+      // Compute end time: +10h15min
+      const end = new Date(start.getTime() + 10*60*60*1000 + 15*60*1000);
+
+      document.getElementById('times').innerText = `Start: ${formatTime(start)} → End: ${formatTime(end)}`;
+
+      interval = setInterval(() => {
+        const current = new Date();
+        let progress = (current - start) / (end - start);
+        progress = Math.min(Math.max(progress, 0), 1); // clamp 0..1
+
+        const bar = document.getElementById('progressBar');
+        bar.style.width = (progress * 100).toFixed(1) + '%';
+        bar.innerText = (progress*100).toFixed(1) + '%';
+
+        // Stop when finished
+        if (progress >= 1) clearInterval(interval);
+      }, 1000);
+    }
+
+    function formatTime(date) {
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mm = String(date.getMinutes()).padStart(2, '0');
+      return `${hh}:${mm}`;
+    }
+  </script>
+</body>
+</html>
