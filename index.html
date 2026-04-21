@@ -1,128 +1,383 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Time Progress App</title>
-  <!-- Viewport for mobile -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shift Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@200;300;400&display=swap" rel="stylesheet">
   <style>
-    /* Dark theme body */
-    body { 
-      font-family: sans-serif; 
-      padding: 20px; 
-      margin: 0; 
-      background-color: #121212; 
-      color: #fff; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      min-height: 100vh; 
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
     }
 
-    h2 { text-align: center; }
+    .container {
+      width: 100%;
+      max-width: 390px;
+    }
 
-    input, button { 
-      padding: 12px; 
-      font-size: 18px; 
-      margin: 8px 0; 
-      width: 100%; 
-      max-width: 400px; 
-      box-sizing: border-box; 
-      border-radius: 6px;
-      border: 1px solid #444; 
-      background-color: #1e1e1e; 
+    /* Header */
+    .header {
+      margin-bottom: 48px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s ease forwards 0.1s;
+    }
+    .header-label {
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+    .header-title {
+      font-size: 34px;
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      color: #fff;
+      line-height: 1.05;
+    }
+
+    /* Ring */
+    .ring-section {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 48px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s ease forwards 0.25s;
+    }
+    .ring-wrap { position: relative; width: 240px; height: 240px; }
+    .ring-center {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .ring-pct {
+      font-size: 64px;
+      font-weight: 200;
+      letter-spacing: -0.04em;
+      line-height: 1;
       color: #fff;
     }
-
-    button {
-      background-color: #4CAF50; 
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
+    .ring-pct span { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.5); }
+    .ring-sub {
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.4);
+      margin-top: 4px;
+      letter-spacing: 0.01em;
     }
-    button:hover {
-      background-color: #45a049;
-    }
-
-    #progressContainer { 
-      width: 100%; 
-      max-width: 400px; 
-      background: #333; 
-      height: 30px; 
-      border-radius: 5px; 
-      margin-top: 20px; 
-      overflow: hidden;
-    }
-
-    #progressBar { 
-      height: 100%; 
-      width: 0%; 
-      text-align: center; 
-      line-height: 30px; 
-      color: #fff;
-      background: linear-gradient(to right, #4CAF50, #2e7d32); /* two green shades */
-      transition: width 0.5s ease;
-    }
-
-    #times { 
-      margin-top: 15px; 
-      text-align: center; 
+    .ring-time {
       font-size: 18px;
-      word-break: break-word;
+      font-weight: 300;
+      color: #fff;
+      margin-top: 8px;
+      letter-spacing: -0.02em;
     }
 
-    label {
-      font-size: 16px;
+    /* Stats row */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 32px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s ease forwards 0.35s;
+    }
+    .stat {
+      background: rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 16px 12px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 0.5px solid rgba(255,255,255,0.1);
+    }
+    .stat-label {
+      font-size: 10px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.03em;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .stat-val {
+      font-size: 20px;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    /* Elapsed */
+    .elapsed-section {
+      background: rgba(255,255,255,0.07);
+      border-radius: 20px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      border: 0.5px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s ease forwards 0.45s;
+    }
+    .elapsed-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .elapsed-label {
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.5);
+    }
+    .elapsed-val {
+      font-size: 28px;
+      font-weight: 200;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+    .elapsed-note {
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      margin-top: 4px;
+    }
+
+    /* Inputs */
+    .inputs-section {
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s ease forwards 0.55s;
+    }
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .field { position: relative; }
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .field input {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border: 0.5px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      font-size: 17px;
+      font-weight: 300;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+      color-scheme: dark;
+    }
+    .field input:focus {
+      border-color: rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.12);
+    }
+
+    /* Button */
+    .btn-section {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s ease forwards 0.65s;
+    }
+    .btn {
+      width: 100%;
+      background: #fff;
+      border: none;
+      border-radius: 14px;
+      color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      font-size: 17px;
+      font-weight: 400;
+      padding: 16px;
+      cursor: pointer;
+      letter-spacing: -0.01em;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn:active { transform: scale(0.98); opacity: 0.8; }
+
+    .note-text {
+      text-align: center;
+      font-size: 12px;
+      color: rgba(255,255,255,0.25);
+      margin-top: 12px;
+      letter-spacing: 0.01em;
+    }
+
+    .done-pill {
+      display: inline-block;
+      background: rgba(52,199,89,0.15);
+      border: 0.5px solid rgba(52,199,89,0.4);
+      border-radius: 999px;
+      color: #34C759;
+      font-size: 13px;
+      font-weight: 400;
+      padding: 6px 16px;
+      margin-top: 20px;
+      text-align: center;
+      width: 100%;
+    }
+
+    @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-  <h2>Time Progress App</h2>
-  <label for="startTime">Start Time (HH:MM):</label>
-  <input type="time" id="startTime" value="08:00">
-  <button onclick="startTracking()">Start</button>
+  <div class="container">
+    <div class="header">
+      <div class="header-label">Today</div>
+      <div class="header-title">Shift Tracker</div>
+    </div>
 
-  <div id="times"></div>
-  <div id="progressContainer">
-    <div id="progressBar">0%</div>
+    <div class="ring-section" id="ringSection">
+      <div class="ring-wrap">
+        <svg width="240" height="240" style="position:absolute;top:0;left:0;">
+          <defs>
+            <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#fff" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#fff"/>
+            </linearGradient>
+          </defs>
+          <!-- Track -->
+          <circle cx="120" cy="120" r="100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6"/>
+          <!-- Arc -->
+          <circle id="arc" cx="120" cy="120" r="100" fill="none"
+            stroke="url(#arcGrad)" stroke-width="6"
+            stroke-dasharray="628.3" stroke-dashoffset="628.3"
+            stroke-linecap="round"
+            transform="rotate(-90 120 120)"
+            style="transition: stroke-dashoffset 1s ease;"/>
+        </svg>
+        <div class="ring-center">
+          <div class="ring-pct" id="pctNum">0<span>%</span></div>
+          <div class="ring-sub">complete</div>
+          <div class="ring-time" id="timeLeftRing">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats" id="statsBlock" style="display:none;">
+      <div class="stat">
+        <div class="stat-label">Started</div>
+        <div class="stat-val" id="startLbl">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Ends</div>
+        <div class="stat-val" id="endLbl">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Left</div>
+        <div class="stat-val" id="leftLbl">—</div>
+      </div>
+    </div>
+
+    <div class="elapsed-section" id="elapsedBlock" style="display:none;">
+      <div class="elapsed-row">
+        <div class="elapsed-label">Net work time</div>
+        <div class="elapsed-val" id="elapsedVal">0:00:00</div>
+      </div>
+      <div class="elapsed-note">Excludes 45 min break</div>
+    </div>
+
+    <div class="inputs-section">
+      <div class="input-row">
+        <div class="field">
+          <label>Start time</label>
+          <input type="time" id="startTime" value="08:00">
+        </div>
+        <div class="field">
+          <label>Work hours</label>
+          <input type="number" id="workHours" value="10" min="1" max="24" step="0.5">
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-section">
+      <button class="btn" onclick="startTracking()">Begin Session</button>
+      <div class="note-text">45 min break included automatically</div>
+      <div id="doneMsg" style="display:none;" class="done-pill">Session complete</div>
+    </div>
   </div>
 
   <script>
-    let interval;
+    let ticker = null;
+    const circ = 2 * Math.PI * 100;
 
-    function startTracking() {
-      clearInterval(interval); // reset previous run
-      const startInput = document.getElementById('startTime').value;
-      if (!startInput) return alert("Please enter a start time");
-
-      // Parse start time
-      const [h, m] = startInput.split(':').map(Number);
-      const now = new Date();
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
-
-      // Compute end time: +10h15min
-      const end = new Date(start.getTime() + 10*60*60*1000 + 15*60*1000);
-
-      document.getElementById('times').innerText = `Start: ${formatTime(start)} → End: ${formatTime(end)}`;
-
-      interval = setInterval(() => {
-        const current = new Date();
-        let progress = (current - start) / (end - start);
-        progress = Math.min(Math.max(progress, 0), 1); // clamp 0..1
-
-        const bar = document.getElementById('progressBar');
-        bar.style.width = (progress * 100).toFixed(1) + '%';
-        bar.innerText = (progress*100).toFixed(1) + '%';
-
-        // Stop when finished
-        if (progress >= 1) clearInterval(interval);
-      }, 1000);
+    function pad(n) { return String(n).padStart(2,'0'); }
+    function fmt(d) { return pad(d.getHours())+':'+pad(d.getMinutes()); }
+    function fmtDur(ms) {
+      if(ms<=0) return '0:00:00';
+      const s=Math.floor(ms/1000);
+      return Math.floor(s/3600)+':'+pad(Math.floor((s%3600)/60))+':'+pad(s%60);
+    }
+    function fmtLeft(ms) {
+      if(ms<=0) return '0:00';
+      const m=Math.ceil(ms/60000);
+      return pad(Math.floor(m/60))+':'+pad(m%60);
     }
 
-    function formatTime(date) {
-      const hh = String(date.getHours()).padStart(2, '0');
-      const mm = String(date.getMinutes()).padStart(2, '0');
-      return `${hh}:${mm}`;
+    function startTracking() {
+      clearInterval(ticker);
+      document.getElementById('doneMsg').style.display='none';
+      const tv = document.getElementById('startTime').value;
+      const wh = parseFloat(document.getElementById('workHours').value);
+      if(!tv||isNaN(wh)) return;
+      const [h,m] = tv.split(':').map(Number);
+      const now = new Date();
+      const s = new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,m).getTime();
+      const e = s + (wh*60+45)*60*1000;
+      document.getElementById('startLbl').textContent = fmt(new Date(s));
+      document.getElementById('endLbl').textContent = fmt(new Date(e));
+      document.getElementById('statsBlock').style.display='grid';
+      document.getElementById('elapsedBlock').style.display='block';
+
+      function tick() {
+        const now = Date.now();
+        const el = now - s;
+        const rem = e - now;
+        const total = e - s;
+        const p = Math.min(Math.max(el/total,0),1);
+        const pPct = p*100;
+
+        document.getElementById('pctNum').innerHTML = Math.floor(pPct)+'<span>%</span>';
+        document.getElementById('arc').style.strokeDashoffset = circ*(1-p);
+        document.getElementById('timeLeftRing').textContent = rem>0 ? fmtLeft(rem)+' left' : 'Done';
+        document.getElementById('leftLbl').textContent = rem>0 ? fmtLeft(rem) : '—';
+        document.getElementById('elapsedVal').textContent = fmtDur(Math.max(el-45*60*1000,0));
+
+        if(p>=1) {
+          clearInterval(ticker);
+          document.getElementById('doneMsg').style.display='block';
+        }
+      }
+      tick();
+      ticker = setInterval(tick, 1000);
     }
   </script>
 </body>
